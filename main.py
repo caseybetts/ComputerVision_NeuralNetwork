@@ -4,6 +4,7 @@ from models.cnn_models import MNISTCNN, MNISTResNet
 from utils.data_loader import MNISTDataLoader
 from training.trainer import MNISTTrainer
 from inference.predictor import MNISTPredictor
+from sklearn.metrics import classification_report  # Add this import
 import argparse
 
 def main():
@@ -14,6 +15,7 @@ def main():
     parser.add_argument('--batch_size', type=int, default=64, help='Batch size')
     parser.add_argument('--mode', choices=['train', 'evaluate', 'predict'], 
                        default='train', help='Mode to run')
+    parser.add_argument('--no_plot', action='store_true', help='Skip plotting to avoid hanging')
     args = parser.parse_args()
     
     # Set device
@@ -35,11 +37,25 @@ def main():
     
     if args.mode == 'train':
         # Training
+        print(f"\nStarting training for {args.epochs} epochs...")
         trainer = MNISTTrainer(model, train_loader, val_loader, device)
         train_losses, val_losses, train_accs, val_accs = trainer.train(epochs=args.epochs)
         
-        # Plot training history
-        trainer.plot_training_history()
+        print(f"\n{'='*50}")
+        print("TRAINING COMPLETED!")
+        print(f"Final Training Accuracy: {train_accs[-1]:.2f}%")
+        print(f"Final Validation Accuracy: {val_accs[-1]:.2f}%")
+        print(f"Best Model saved as: best_model.pth")
+        print(f"{'='*50}")
+        
+        # Plot training history (optional)
+        if not args.no_plot:
+            print("\nGenerating training plots...")
+            trainer.plot_training_history()
+            print("Plot window opened. Close it to continue or press Ctrl+C to exit.")
+        else:
+            print("\nSkipping plots (--no_plot flag used)")
+            print("Training completed successfully!")
         
     elif args.mode == 'evaluate':
         # Load best model
