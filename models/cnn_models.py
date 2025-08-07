@@ -2,14 +2,15 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-class MNISTCNN(nn.Module):
-    def __init__(self, num_classes=10):
-        super(MNISTCNN, self).__init__()
+class EMNISTCNN(nn.Module):
+    def __init__(self, num_classes=26):  # Default to letters (A-Z)
+        super(EMNISTCNN, self).__init__()
         
         # Convolutional layers
         self.conv1 = nn.Conv2d(1, 32, kernel_size=3, padding=1)
         self.conv2 = nn.Conv2d(32, 64, kernel_size=3, padding=1)
         self.conv3 = nn.Conv2d(64, 128, kernel_size=3, padding=1)
+        self.conv4 = nn.Conv2d(128, 256, kernel_size=3, padding=1)
         
         # Pooling layers
         self.pool = nn.MaxPool2d(2, 2)
@@ -18,7 +19,7 @@ class MNISTCNN(nn.Module):
         self.dropout = nn.Dropout(0.25)
         
         # Fully connected layers
-        self.fc1 = nn.Linear(128 * 3 * 3, 512)
+        self.fc1 = nn.Linear(256 * 1 * 1, 512)
         self.fc2 = nn.Linear(512, num_classes)
         
     def forward(self, x):
@@ -31,8 +32,11 @@ class MNISTCNN(nn.Module):
         # Third conv block
         x = self.pool(F.relu(self.conv3(x)))  # 7x7 -> 3x3
         
+        # Fourth conv block
+        x = self.pool(F.relu(self.conv4(x)))  # 3x3 -> 1x1
+        
         # Flatten
-        x = x.view(-1, 128 * 3 * 3)
+        x = x.view(-1, 256 * 1 * 1)
         
         # Fully connected layers
         x = F.relu(self.fc1(x))
@@ -41,9 +45,9 @@ class MNISTCNN(nn.Module):
         
         return x
 
-class MNISTResNet(nn.Module):
-    def __init__(self, num_classes=10):
-        super(MNISTResNet, self).__init__()
+class EMNISTResNet(nn.Module):
+    def __init__(self, num_classes=26):
+        super(EMNISTResNet, self).__init__()
         
         # Initial convolution
         self.conv1 = nn.Conv2d(1, 64, kernel_size=7, stride=2, padding=3)
@@ -90,4 +94,13 @@ class MNISTResNet(nn.Module):
         x = x.view(x.size(0), -1)
         x = self.fc(x)
         
-        return x 
+        return x
+
+# Keep the old MNIST models for backward compatibility
+class MNISTCNN(EMNISTCNN):
+    def __init__(self, num_classes=10):
+        super().__init__(num_classes)
+
+class MNISTResNet(EMNISTResNet):
+    def __init__(self, num_classes=10):
+        super().__init__(num_classes) 
