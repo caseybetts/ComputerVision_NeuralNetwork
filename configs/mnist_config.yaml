@@ -1,0 +1,23 @@
+model:
+  type: "cnn"  # or "resnet"
+  num_classes: 10
+  input_channels: 1
+
+training:
+  batch_size: 64
+  learning_rate: 0.001
+  epochs: 10
+  optimizer: "adam"
+  scheduler: "step"
+  step_size: 7
+  gamma: 0.1
+
+data:
+  train_split: 0.8
+  val_split: 0.2
+  augmentation: true
+  normalize: true
+
+inference:
+  confidence_threshold: 0.5
+  top_k: 3 
